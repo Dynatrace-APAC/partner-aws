@@ -1,2 +1,1 @@
-# partner-aws
- 
+# CloudFormation scripts for POWER
