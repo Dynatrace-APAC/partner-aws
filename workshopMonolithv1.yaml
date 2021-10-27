@@ -111,6 +111,9 @@ Resources:
     DependsOn: AttachGateway
     Properties:
       InstanceType: m4.xlarge
+      AvailabilityZone: !Select 
+        - 0
+        - Fn::GetAZs: !Ref 'AWS::Region'
       KeyName: !Ref 'KeyPairName'
       ImageId: !FindInMap [RegionMap, !Ref "AWS::Region", AMI]
       Tags:
@@ -139,6 +142,11 @@ Resources:
             - ${DT_BASEURL}/api/v1/deployment/installer/agent/unix/default/latest?Api-Token=
             - !Ref 'DynatracePaasToken'
             - "&arch=x86&flavor=default\"\n"
+            - wget -O activegate.sh "
+            - ${DT_BASEURL}/api/v1/deployment/installer/gateway/unix/latest?Api-Token=
+            - !Ref 'DynatracePaasToken'
+            - "&arch=x86&flavor=default\"\n"
+            - "sudo apt-get update\n"
             - "/bin/sh Dynatrace-OneAgent.sh"
             - " --set-app-log-content-access=true"
             - " --set-infra-only=false"
@@ -147,14 +155,9 @@ Resources:
             - " --set-host-group="
             - !If [HasResourcePrefix, !Sub "${ResourcePrefix}-dt-orders-monolith", dt-orders-monolith]
             - "\n"            
-            - "sudo apt-get update\n"
-            - wget -O activegate.sh "
-            - ${DT_BASEURL}/api/v1/deployment/installer/gateway/unix/latest?Api-Token=
-            - !Ref 'DynatracePaasToken'
-            - "&arch=x86&flavor=default\"\n"
+            - "/bin/sh activegate.sh\n"
             - "sudo apt-get install -y git\n"
-            -  "/bin/sh activegate.sh\n"
-            - "git clone https://github.com/dt-alliances-workshops/aws-modernization-dt-orders-setup.git /home/ubuntu/aws-modernization-dt-orders-setup\n"
+            - "git clone --branch add-stg-vm https://github.com/dt-alliances-workshops/aws-modernization-dt-orders-setup.git /home/ubuntu/aws-modernization-dt-orders-setup\n"
             - "cd /home/ubuntu/aws-modernization-dt-orders-setup\n"
             - "sudo /home/ubuntu/aws-modernization-dt-orders-setup/provision-scripts/setup-host.sh dt-orders-monolith > /tmp/cloud-init-services.log\n"
       NetworkInterfaces:
